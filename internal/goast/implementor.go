@@ -414,6 +414,9 @@ func (imp *Implementor) Visit(node ast.Node) ast.Visitor {
 	case *ast.ChanType:
 		return imp.visitChanType(t)
 
+	case *ast.Ellipsis:
+		return imp.visitEllipsis(t)
+
 	case *ast.MapType:
 		return imp.visitMapType(t)
 
@@ -450,6 +453,14 @@ func (imp *Implementor) visitChanType(node *ast.ChanType) ast.Visitor {
 			node.Value = t
 		}
 
+		return nil
+	}
+	return imp
+}
+
+func (imp *Implementor) visitEllipsis(node *ast.Ellipsis) ast.Visitor {
+	if t, ok := imp.replacementType(node.Elt); ok {
+		node.Elt = t
 		return nil
 	}
 	return imp
