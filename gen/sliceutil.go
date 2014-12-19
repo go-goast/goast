@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gen
 
-// +build generate
 type I interface{}
 type Slice []I
 
