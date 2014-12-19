@@ -84,12 +84,12 @@ To see how it's possible to abstract this complex pattern with goast, refer to t
 
 goast is still in an alpha/RFC stage of development. Some features that are planned for v1 are
 
-* Support for generic structs
-* A new `goast write` subcommand that supports a wider range of inference for types to apply to a generic template. Think defining a slice of structs and having a set of transformation methods generated for the slice. e.g. `func (s Things) MapToString(func(T)string) []string`
-* Towards the previous two goals, generic name generation infered from the implementation. e.g `func (s Slice) MapTo_(func(T)X) []X` being implemented as `func (s Things) MapToString(func(T)string) []string`
-* Pruning. A flag that specifies that any generated code that isn't actually used should be eliminated. Ideally off during development and then enabled for producing a production binary. Most useful for standalone apps and less useful for libraries.
-* Support for comments. Currently comments are not included as part of a transformation due to the difficulty in realigning them with nodes after replacement. Ideally comments will be included in generated implementations.
-* More control over generated file names and perhaps the ability to direct all generic code for a type into a single file
+* Support for generic structs [Issue](https://github.com/jamesgarfield/goast/issues/1)
+* Related Types [Issue](https://github.com/jamesgarfield/goast/issues/4)
+* Inferred renaming. [Issue](https://github.com/jamesgarfield/goast/issues/2)
+* Pruning. [Issue](https://github.com/jamesgarfield/goast/issues/6)
+* Support for comments. [Issue](https://github.com/jamesgarfield/goast/issues/5)
+* File naming control [Issue](https://github.com/jamesgarfield/goast/issues/7)
 
 
 ## History and acknowledgements
