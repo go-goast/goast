@@ -85,7 +85,8 @@ To see how it's possible to abstract this complex pattern with goast, refer to t
 goast is still in an alpha/RFC stage of development. Some features that are planned for v1 are
 
 * Support for generic structs [Issue](https://github.com/jamesgarfield/goast/issues/1)
-* Related Types [Issue](https://github.com/jamesgarfield/goast/issues/4)
+* Related Types [Issue](https://github.com/jamesgarfield/goast/issues/3)
+* Projection [Issue](https://github.com/jamesgarfield/goast/issues/4)
 * Inferred renaming. [Issue](https://github.com/jamesgarfield/goast/issues/2)
 * Pruning. [Issue](https://github.com/jamesgarfield/goast/issues/6)
 * Support for comments. [Issue](https://github.com/jamesgarfield/goast/issues/5)
