@@ -68,7 +68,7 @@ func (s Ints) Filter(fn func(int)bool) (result Ints) {
 }
 ```
 
-A more complete set of slice utilities can be seen in the internal [sliceutil.go](https://github.com/jamesgarfield/goast/blob/master/internal/gen/sliceutil.go) file, and are used throughout the internal/goast library. [Example](https://github.com/jamesgarfield/goast/blob/master/internal/goast/filedecls_sliceutil.go).
+A more complete set of slice utilities can be seen in the internal [sliceutil.go](https://github.com/jamesgarfield/goast/blob/master/gen/sliceutil.go) file, and are used throughout the goast library. [Example](https://github.com/jamesgarfield/goast/blob/master/filedecls_sliceutil.go).
 
 
 ## Complex Example
