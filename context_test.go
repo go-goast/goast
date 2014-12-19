@@ -1,4 +1,4 @@
-package goast
+package main
 
 import (
 	"go/ast"

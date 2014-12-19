@@ -18,14 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"./internal/goast"
 	"fmt"
 	"gopkg.in/alecthomas/kingpin.v1"
 	"os"
 	"path/filepath"
 )
 
-const VERSION = "0.1.0"
+const VERSION = "0.1.1"
 
 func main() {
 	var (
@@ -58,29 +57,29 @@ func main() {
 
 func implement(genericFile, specFile string) {
 
-	typeProvider, err := goast.NewFilePackageContext(specFile)
+	typeProvider, err := NewFilePackageContext(specFile)
 
 	if err != nil {
 		fmt.Println("Error type provider file: ", err)
 		return
 	}
 
-	imp := goast.NewImplementor(typeProvider)
+	imp := NewImplementor(typeProvider)
 
 	fmt.Printf("Implement %s on %s\n", genericFile, specFile)
-	goast.RewriteFile(genericFile, filepath.Dir(specFile), imp)
+	RewriteFile(genericFile, filepath.Dir(specFile), imp)
 }
 
 func printFileDecls(path string) {
 	println("Printing ", path)
-	c, err := goast.NewFileContext(path)
+	c, err := NewFileContext(path)
 	if err != nil {
 		println(err)
 		return
 	}
-	goast.PrintDecls(c.File)
+	PrintDecls(c.File)
 }
 
 func version() string {
-	return fmt.Sprintf("%s-%s", VERSION, goast.VERSION)
+	return VERSION
 }

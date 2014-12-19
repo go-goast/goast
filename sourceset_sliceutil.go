@@ -1,14 +1,12 @@
-package goast
+package main
 
-import "go/ast"
-
-func (s typeSet) Len() int {
+func (s SourceSet) Len() int {
 	return len(s)
 }
-func (s typeSet) Swap(i, j int) {
+func (s SourceSet) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
-func (s typeSet) All(fn func(*ast.TypeSpec) bool) bool {
+func (s SourceSet) All(fn func(*SourceCode) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
 			return false
@@ -16,7 +14,7 @@ func (s typeSet) All(fn func(*ast.TypeSpec) bool) bool {
 	}
 	return true
 }
-func (s typeSet) Any(fn func(*ast.TypeSpec) bool) bool {
+func (s SourceSet) Any(fn func(*SourceCode) bool) bool {
 	for _, v := range s {
 		if fn(v) {
 			return true
@@ -24,7 +22,7 @@ func (s typeSet) Any(fn func(*ast.TypeSpec) bool) bool {
 	}
 	return false
 }
-func (s typeSet) Count(fn func(*ast.TypeSpec) bool) int {
+func (s SourceSet) Count(fn func(*SourceCode) bool) int {
 	count := 0
 	for _, v := range s {
 		if fn(v) {
@@ -33,12 +31,12 @@ func (s typeSet) Count(fn func(*ast.TypeSpec) bool) int {
 	}
 	return count
 }
-func (s typeSet) Each(fn func(*ast.TypeSpec)) {
+func (s SourceSet) Each(fn func(*SourceCode)) {
 	for _, v := range s {
 		fn(v)
 	}
 }
-func (s typeSet) First(fn func(*ast.TypeSpec) bool) (match *ast.TypeSpec, found bool) {
+func (s SourceSet) First(fn func(*SourceCode) bool) (match *SourceCode, found bool) {
 	for _, v := range s {
 		if fn(v) {
 			match = v
@@ -48,7 +46,7 @@ func (s typeSet) First(fn func(*ast.TypeSpec) bool) (match *ast.TypeSpec, found 
 	}
 	return
 }
-func (s typeSet) Where(fn func(*ast.TypeSpec) bool) (result typeSet) {
+func (s SourceSet) Where(fn func(*SourceCode) bool) (result SourceSet) {
 	for _, v := range s {
 		if fn(v) {
 			result = append(result, v)

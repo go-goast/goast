@@ -1,14 +1,14 @@
-package goast
+package main
 
 import "go/ast"
 
-func (s fileImports) Len() int {
+func (s fileDecls) Len() int {
 	return len(s)
 }
-func (s fileImports) Swap(i, j int) {
+func (s fileDecls) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
-func (s fileImports) All(fn func(*ast.ImportSpec) bool) bool {
+func (s fileDecls) All(fn func(ast.Decl) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
 			return false
@@ -16,7 +16,7 @@ func (s fileImports) All(fn func(*ast.ImportSpec) bool) bool {
 	}
 	return true
 }
-func (s fileImports) Any(fn func(*ast.ImportSpec) bool) bool {
+func (s fileDecls) Any(fn func(ast.Decl) bool) bool {
 	for _, v := range s {
 		if fn(v) {
 			return true
@@ -24,7 +24,7 @@ func (s fileImports) Any(fn func(*ast.ImportSpec) bool) bool {
 	}
 	return false
 }
-func (s fileImports) Count(fn func(*ast.ImportSpec) bool) int {
+func (s fileDecls) Count(fn func(ast.Decl) bool) int {
 	count := 0
 	for _, v := range s {
 		if fn(v) {
@@ -33,12 +33,12 @@ func (s fileImports) Count(fn func(*ast.ImportSpec) bool) int {
 	}
 	return count
 }
-func (s fileImports) Each(fn func(*ast.ImportSpec)) {
+func (s fileDecls) Each(fn func(ast.Decl)) {
 	for _, v := range s {
 		fn(v)
 	}
 }
-func (s fileImports) First(fn func(*ast.ImportSpec) bool) (match *ast.ImportSpec, found bool) {
+func (s fileDecls) First(fn func(ast.Decl) bool) (match ast.Decl, found bool) {
 	for _, v := range s {
 		if fn(v) {
 			match = v
@@ -48,7 +48,7 @@ func (s fileImports) First(fn func(*ast.ImportSpec) bool) (match *ast.ImportSpec
 	}
 	return
 }
-func (s fileImports) Where(fn func(*ast.ImportSpec) bool) (result fileImports) {
+func (s fileDecls) Where(fn func(ast.Decl) bool) (result fileDecls) {
 	for _, v := range s {
 		if fn(v) {
 			result = append(result, v)
