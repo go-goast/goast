@@ -13,7 +13,7 @@ goast's core philosophies are
 * Prefer inference over annotation
 * Dependency free
 
-The functionality of goast is built on the following axiom and proposition
+The functionality of goast is currently built on the following axiom and proposition
 
 1. The empty interface (`interface{}`) can be replaced with any other type
 2. Any composite type composed at least partially of the empty interface (e.g. `map[string]interface{}`) can be replaced with any other composite type of the same structure with the empty interface swapped out for a concrete type (e.g. `map[string][]int64`)
