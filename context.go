@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-//go:generate goast write impl ..\gen\sliceutil.go
+//go:generate goast write impl gen/sliceutil.go
 
 type Context struct {
 	*ast.File

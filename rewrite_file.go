@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-//go:generate goast write impl ..\gen\sliceutil.go
+//go:generate goast write impl gen/sliceutil.go
 
 //name does not definitely indicate the resulting filename
 //it merely acts as a unique identifer that can be used in the filename

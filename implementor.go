@@ -26,7 +26,7 @@ import (
 	"strconv"
 )
 
-//go:generate goast write impl ..\gen\sliceutil.go
+//go:generate goast write impl gen/sliceutil.go
 
 //String identifer for the empty interface; used it Implementor.TypeMap
 const (
