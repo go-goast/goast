@@ -1,7 +1,18 @@
 package main
 
-import "go/ast"
+import (
+	"sort"
+	"go/ast"
+)
 
+type typeSetSorter struct {
+	typeSet
+	LessFunc	func(*ast.TypeSpec, *ast.TypeSpec) bool
+}
+
+func (s typeSetSorter) Less(i, j int) bool {
+	return s.LessFunc(s.typeSet[i], s.typeSet[j])
+}
 func (s typeSet) Len() int {
 	return len(s)
 }
@@ -47,6 +58,9 @@ func (s typeSet) First(fn func(*ast.TypeSpec) bool) (match *ast.TypeSpec, found 
 		}
 	}
 	return
+}
+func (s typeSet) Sort(less func(*ast.TypeSpec, *ast.TypeSpec) bool) {
+	sort.Sort(typeSetSorter{s, less})
 }
 func (s typeSet) Where(fn func(*ast.TypeSpec) bool) (result typeSet) {
 	for _, v := range s {

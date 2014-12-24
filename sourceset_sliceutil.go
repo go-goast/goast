@@ -1,5 +1,17 @@
 package main
 
+import (
+	"sort"
+)
+
+type SourceSetSorter struct {
+	SourceSet
+	LessFunc	func(*SourceCode, *SourceCode) bool
+}
+
+func (s SourceSetSorter) Less(i, j int) bool {
+	return s.LessFunc(s.SourceSet[i], s.SourceSet[j])
+}
 func (s SourceSet) Len() int {
 	return len(s)
 }
@@ -45,6 +57,9 @@ func (s SourceSet) First(fn func(*SourceCode) bool) (match *SourceCode, found bo
 		}
 	}
 	return
+}
+func (s SourceSet) Sort(less func(*SourceCode, *SourceCode) bool) {
+	sort.Sort(SourceSetSorter{s, less})
 }
 func (s SourceSet) Where(fn func(*SourceCode) bool) (result SourceSet) {
 	for _, v := range s {

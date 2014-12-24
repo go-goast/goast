@@ -1,7 +1,18 @@
 package main
 
-import "go/ast"
+import (
+	"sort"
+	"go/ast"
+)
 
+type funcDeclsSorter struct {
+	funcDecls
+	LessFunc	func(*ast.FuncDecl, *ast.FuncDecl) bool
+}
+
+func (s funcDeclsSorter) Less(i, j int) bool {
+	return s.LessFunc(s.funcDecls[i], s.funcDecls[j])
+}
 func (s funcDecls) Len() int {
 	return len(s)
 }
@@ -47,6 +58,9 @@ func (s funcDecls) First(fn func(*ast.FuncDecl) bool) (match *ast.FuncDecl, foun
 		}
 	}
 	return
+}
+func (s funcDecls) Sort(less func(*ast.FuncDecl, *ast.FuncDecl) bool) {
+	sort.Sort(funcDeclsSorter{s, less})
 }
 func (s funcDecls) Where(fn func(*ast.FuncDecl) bool) (result funcDecls) {
 	for _, v := range s {

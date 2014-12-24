@@ -1,7 +1,18 @@
 package main
 
-import "go/ast"
+import (
+	"sort"
+	"go/ast"
+)
 
+type fileImportsSorter struct {
+	fileImports
+	LessFunc	func(*ast.ImportSpec, *ast.ImportSpec) bool
+}
+
+func (s fileImportsSorter) Less(i, j int) bool {
+	return s.LessFunc(s.fileImports[i], s.fileImports[j])
+}
 func (s fileImports) Len() int {
 	return len(s)
 }
@@ -47,6 +58,9 @@ func (s fileImports) First(fn func(*ast.ImportSpec) bool) (match *ast.ImportSpec
 		}
 	}
 	return
+}
+func (s fileImports) Sort(less func(*ast.ImportSpec, *ast.ImportSpec) bool) {
+	sort.Sort(fileImportsSorter{s, less})
 }
 func (s fileImports) Where(fn func(*ast.ImportSpec) bool) (result fileImports) {
 	for _, v := range s {
