@@ -17,8 +17,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gen
 
+import (
+	"sort"
+)
+
 type I interface{}
 type Slice []I
+
+type _Sorter struct {
+	Slice
+	LessFunc func(I, I) bool
+}
+
+func (s _Sorter) Less(i, j int) bool {
+	return s.LessFunc(s.Slice[i], s.Slice[j])
+}
 
 func (s Slice) Len() int {
 	return len(s)
@@ -71,6 +84,10 @@ func (s Slice) First(fn func(I) bool) (match I, found bool) {
 		}
 	}
 	return
+}
+
+func (s Slice) Sort(less func(I, I) bool) {
+	sort.Sort(_Sorter{s, less})
 }
 
 func (s Slice) Where(fn func(I) bool) (result Slice) {
