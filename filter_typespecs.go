@@ -25,7 +25,7 @@ import (
 //ast.FilterFile cannot be used because it filters out import statements
 //This is a known issue and the suggestion is to roll your own
 //See: https://github.com/golang/go/issues/9248
-func filterTypeSpecs(file *ast.File, fn func(string) bool) {
+func filterTypeSpecs(file *ast.File, fn func(*ast.TypeSpec) bool) {
 	i := 0
 	for _, d := range file.Decls {
 		if filterNodeForTypeSpec(d, fn) {
@@ -36,21 +36,21 @@ func filterTypeSpecs(file *ast.File, fn func(string) bool) {
 	file.Decls = file.Decls[0:i]
 }
 
-func filterNodeForTypeSpec(node ast.Node, fn func(string) bool) bool {
+func filterNodeForTypeSpec(node ast.Node, fn func(*ast.TypeSpec) bool) bool {
 	switch t := node.(type) {
 	case *ast.GenDecl:
 		t.Specs = filterSpecsForTypeSpec(t.Specs, fn)
 		return len(t.Specs) > 0
 
 	case *ast.TypeSpec:
-		return fn(t.Name.Name)
+		return fn(t)
 
 	default:
 		return true
 	}
 }
 
-func filterSpecsForTypeSpec(specs []ast.Spec, fn func(string) bool) []ast.Spec {
+func filterSpecsForTypeSpec(specs []ast.Spec, fn func(*ast.TypeSpec) bool) []ast.Spec {
 	i := 0
 	for _, s := range specs {
 		if filterNodeForTypeSpec(s, fn) {

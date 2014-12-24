@@ -24,6 +24,7 @@ import (
 	"golang.org/x/tools/astutil"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 //go:generate goast write impl gen/sliceutil.go
@@ -62,20 +63,25 @@ func (a typesByComplexity) Less(i, j int) bool {
 
 func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, errors []error) {
 
+	isRelatedType := func(t *ast.TypeSpec) bool { return strings.Contains(t.Name.Name, "_") }
+	isImplType := func(t *ast.TypeSpec) bool { return !isRelatedType(t) }
+
 	var (
 		candidateTypes typeSet = imp.TypeProvider.Types()
 		genTypes       typeSet = gen.Types()
+		implTypes              = genTypes.Where(isImplType)
+		relatedTypes           = genTypes.Where(isRelatedType)
 	)
 
 	sort.Sort(typesByComplexity{candidateTypes, imp.TypeProvider})
-	sort.Sort(typesByComplexity{genTypes, gen})
+	sort.Sort(typesByComplexity{implTypes, gen})
 
-	if genTypes.Len() == 0 {
+	if implTypes.Len() == 0 {
 		errors = append(errors, fmt.Errorf("Invalid generic specification: No Types!"))
 		return
 	}
 
-	primaryGeneric := genTypes[0]
+	primaryGeneric := implTypes[0]
 
 	//Test each type in the provider file for implementation
 	for _, c := range candidateTypes {
@@ -107,7 +113,7 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 		})
 
 		matched := 0
-		for _, g := range genTypes {
+		for _, g := range implTypes {
 			//types that already have mappings are already solved for
 			if _, ok := imp.TypeMap[g.Name.Name]; ok {
 				matched++
@@ -135,24 +141,20 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 		}
 
 		//If all generic types are mapped, rewrite the generic AST with the provided types
-		if matched == genTypes.Len() {
+		if matched == implTypes.Len() {
+
+			//Filter implemented types out
+			//Do this prior to renaming related types so we can still identify them
+			//ast.FilterFile filters out import statements...always, so use custom filter method https://github.com/golang/go/issues/9248
+			filterTypeSpecs(imp.Generic.File, func(t *ast.TypeSpec) bool { return !isImplType(t) })
+
+			//Generate names for all related types
+			relatedTypes.Each(func(t *ast.TypeSpec) {
+				specName := imp.relatedTypeName(t)
+				imp.storeTypeMapping(t.Name.Name, ast.NewIdent(specName))
+			})
 
 			ast.Walk(imp, imp.Generic.File)
-
-			//ast.FilterFile filters out import statements...always
-			//https://github.com/golang/go/issues/9248
-			/**
-			ast.FilterFile(imp.Generic, func(ident string) bool {
-				println("Filter Ident: ", ident)
-				_, exists := imp.TypeMap[ident]
-				return !exists
-			})
-			**/
-
-			filterTypeSpecs(imp.Generic.File, func(ident string) bool {
-				_, exists := imp.TypeMap[ident]
-				return !exists
-			})
 
 			//ensure that implementation is in the correct package
 			imp.Generic.SetPackage(imp.TypeProvider.File.Name.Name)
@@ -417,6 +419,9 @@ func (imp *Implementor) Visit(node ast.Node) ast.Visitor {
 	case *ast.Ellipsis:
 		return imp.visitEllipsis(t)
 
+	case *ast.Ident:
+		return imp.visitIdent(t)
+
 	case *ast.MapType:
 		return imp.visitMapType(t)
 
@@ -461,6 +466,18 @@ func (imp *Implementor) visitChanType(node *ast.ChanType) ast.Visitor {
 func (imp *Implementor) visitEllipsis(node *ast.Ellipsis) ast.Visitor {
 	if t, ok := imp.replacementType(node.Elt); ok {
 		node.Elt = t
+		return nil
+	}
+	return imp
+}
+
+func (imp *Implementor) visitIdent(node *ast.Ident) ast.Visitor {
+	if t, ok := imp.replacementType(node); ok {
+		if id, ok := t.(*ast.Ident); ok {
+			node.Name = id.Name
+		} else {
+			fmt.Printf("Invalid ident replacement for %s: %s", node.Name, ExprString(t))
+		}
 		return nil
 	}
 	return imp
@@ -522,4 +539,31 @@ func (imp *Implementor) replacementType(node ast.Node) (ast.Expr, bool) {
 	default:
 		return nil, false
 	}
+}
+
+func (imp *Implementor) relatedTypeName(t *ast.TypeSpec) string {
+
+	var (
+		implExpr    ast.Expr
+		found       bool
+		implName    string
+		partialName string = t.Name.Name
+	)
+
+	ast.Inspect(t, func(node ast.Node) bool {
+		if id, ok := node.(*ast.Ident); ok {
+			implExpr, found = imp.TypeMap[id.Name]
+		}
+		return !found
+	})
+
+	switch exprType := implExpr.(type) {
+	case *ast.Ident:
+		implName = exprType.Name
+
+	default:
+		implName = ExprString(implExpr)
+	}
+
+	return strings.Replace(partialName, "_", implName, -1)
 }
