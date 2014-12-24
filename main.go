@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 )
 
-const VERSION = "0.1.2"
+const VERSION = "0.2.0"
 
 func main() {
 	var (
