@@ -276,7 +276,18 @@ func (imp *Implementor) implementIdent(gen *ast.Ident, spec ast.Expr) (ok bool, 
 		return
 	}
 
-	err = fmt.Errorf("Cannot implement %s with %+v", gen.Name, spec)
+	specIdent, ok := spec.(*ast.Ident)
+	if !ok {
+		err = fmt.Errorf("Cannot implement ident %s with non-ident %+v", gen.Name, spec)
+		return
+	}
+
+	if ok = (gen.Name == specIdent.Name); ok {
+		imp.storeTypeMapping(gen.Name, spec)
+		return
+	}
+
+	err = fmt.Errorf("Cannot implement %s with %s", gen.Name, specIdent.Name)
 	return
 }
 
