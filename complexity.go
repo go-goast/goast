@@ -70,7 +70,7 @@ func (c *Context) complexityOfExpr(node ast.Expr) int {
 			c.complexityOfExpr(nodeType.Value)) + 1
 
 	case *ast.StructType:
-		return 1
+		return c.complexityOfFieldList(nodeType.Fields) + 1
 
 	default:
 		return 0

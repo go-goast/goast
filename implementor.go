@@ -244,6 +244,11 @@ func (imp *Implementor) implementExpr(gen, spec ast.Expr) (ok bool, err error) {
 			return true, nil
 		}
 
+	case *ast.StructType:
+		if specType, ok := spec.(*ast.StructType); ok {
+			return imp.implementStruct(genType, specType)
+		}
+
 	default:
 		err = fmt.Errorf("Invalid Expression. %s", ExprString(gen))
 		return
@@ -299,6 +304,55 @@ func (imp *Implementor) implementInterfaceType(gen *ast.InterfaceType, spec ast.
 	}
 
 	imp.storeTypeMapping(emptyInterface, spec)
+	return
+}
+
+//Find and return a field with a given name within a field list
+func FieldByName(list *ast.FieldList, name string) (field *ast.Field, found bool) {
+	for _, field = range list.List {
+		for _, ident := range field.Names {
+			if found = (ident.Name == name); found {
+				return
+			}
+		}
+	}
+	field = nil
+	return
+}
+
+func (imp *Implementor) implementStruct(gen, spec *ast.StructType) (ok bool, err error) {
+
+	genCount := gen.Fields.NumFields()
+	//Empty generic structs match any other stuct
+	if genCount == 0 {
+		ok = true
+		return
+	}
+
+	specCount := spec.Fields.NumFields()
+	//Specification structs must have at least as many fields as generic stucts to be able to match
+	if specCount < genCount {
+		err = fmt.Errorf("Not enough fields to implement struct")
+		return
+	}
+
+	//Check that the specification struct implements all fields in the generic struct
+	//TODO How are embedded types handled?
+	//TODO Is there a way to support _ named fields? What would this mean?
+	for _, field := range gen.Fields.List {
+		for _, name := range field.Names {
+			var nameMatch *ast.Field
+			nameMatch, ok = FieldByName(spec.Fields, name.Name)
+			if !ok {
+				err = fmt.Errorf("Missing field %s", name.Name)
+				return
+			}
+			if ok, err = imp.implementExpr(field.Type, nameMatch.Type); !ok {
+				return
+			}
+		}
+	}
+	ok = true
 	return
 }
 

@@ -18,6 +18,7 @@ func Test_Complexity(t *testing.T) {
 		{"type T interface{}", "type T map[string]interface{}"},
 		{"type T map[string]interface{}", `	type T map[A]interface{}
 											type A interface{}`},
+		{"type T interface{}", "type T struct{ id int }"},
 	}
 
 	for _, cmp := range tests {
