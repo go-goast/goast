@@ -67,7 +67,7 @@ func RewriteFile(genericSourceFile, outputDirectory string, t AstTransform) {
 
 func printErrors(errors []error) {
 	for _, e := range errors {
-		fmt.Printf("Error: %s\n", e)
+		fmt.Printf("Error: %s\n", e.Error())
 	}
 }
 
