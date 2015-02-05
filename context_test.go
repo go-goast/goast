@@ -68,3 +68,25 @@ func Test_Funcs(t *testing.T) {
 		}
 	}
 }
+
+type typeThatUsesAnImport map[string]*testing.T
+type typeThatHasNoImport map[string]int
+
+func Test_ImportsOf(t *testing.T) {
+	c, _ := NewFileContext("context_test.go")
+
+	tp, _ := c.LookupType("typeThatUsesAnImport")
+
+	imports := c.ImportsOf(tp.Type)
+	if imports.Len() != 1 {
+		t.Error("Invalid number of imports. Expected 1, got ", imports.Len())
+	}
+
+	tp, _ = c.LookupType("typeThatHasNoImport")
+
+	imports = c.ImportsOf(tp.Type)
+	if imports.Len() != 0 {
+		t.Error("Invalid number of imports. Expected 0, got ", imports.Len())
+	}
+
+}

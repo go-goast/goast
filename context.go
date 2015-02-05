@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
+	"golang.org/x/tools/astutil"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -167,6 +168,96 @@ func (c *Context) Types() []*ast.TypeSpec {
 	var decls fileDecls = c.File.Decls
 	types := decls.MapToTypeSpec(declAsTypeSpec)
 	return types
+}
+
+func (c *Context) ImportsOf(x ast.Expr) ImportSpecs {
+	return c.importsOfExpr(x)
+}
+
+func (c *Context) importsOfExpr(x ast.Expr) (result ImportSpecs) {
+	// *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+	switch t := x.(type) {
+	case *ast.FuncType:
+		return c.importsOfFuncType(t)
+
+	case *ast.Ident:
+		return c.importsOfIdent(t)
+
+	case *ast.InterfaceType:
+		return c.importsOfFieldList(t.Methods)
+
+	case *ast.MapType:
+		return c.importsOfMapType(t)
+
+	case *ast.SelectorExpr:
+		return c.importsOfSelector(t)
+
+	default:
+		return c.importsOfSubExpr(x)
+	}
+}
+
+func (c *Context) importsOfFuncType(x *ast.FuncType) ImportSpecs {
+	return append(c.importsOfFieldList(x.Params), c.importsOfFieldList(x.Results)...)
+}
+
+func (c *Context) importsOfFieldList(x *ast.FieldList) (result ImportSpecs) {
+	for _, field := range x.List {
+		result = append(result, c.importsOfExpr(field.Type)...)
+	}
+	return
+}
+
+func (c *Context) importsOfIdent(x *ast.Ident) (result ImportSpecs) {
+	if t, isType := c.LookupType(x.Name); isType {
+		result = append(result, c.importsOfExpr(t.Type)...)
+	}
+	return
+}
+
+func (c *Context) importsOfMapType(x *ast.MapType) ImportSpecs {
+	return append(c.importsOfExpr(x.Key), c.importsOfExpr(x.Value)...)
+}
+
+func (c *Context) importsOfSubExpr(x ast.Expr) (result ImportSpecs) {
+	switch t := x.(type) {
+	case *ast.ParenExpr:
+		return c.importsOfExpr(t.X)
+
+	case *ast.SelectorExpr:
+		return c.importsOfExpr(t)
+
+	case *ast.StarExpr:
+		return c.importsOfExpr(t.X)
+
+	case *ast.Ellipsis:
+		return c.importsOfExpr(t.Elt)
+
+	case *ast.ArrayType:
+		return c.importsOfExpr(t.Elt)
+
+	case *ast.ChanType:
+		return c.importsOfExpr(t.Value)
+	}
+	return result
+}
+
+func (c *Context) importsOfSelector(x *ast.SelectorExpr) (result ImportSpecs) {
+	id, isIdent := x.X.(*ast.Ident)
+	if !isIdent {
+		return
+	}
+
+	if match, found := c.LookupImport(id.Name); found {
+		result = append(result, match)
+
+	}
+	return
+}
+
+func (c *Context) AddImportFromSpec(spec *ast.ImportSpec) {
+	newImport, _ := strconv.Unquote(spec.Path.Value)
+	astutil.AddImport(token.NewFileSet(), c.File, newImport)
 }
 
 //Parse a given source file, and its enclosing package directory
