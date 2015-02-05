@@ -89,18 +89,18 @@ func (imr ImplRewriter) visitIdent(node *ast.Ident) ast.Visitor {
 }
 
 func (imr ImplRewriter) visitMapType(node *ast.MapType) ast.Visitor {
-	var done bool
+	var did int
 	if t, ok := imr.replacementType(node.Key); ok {
 		node.Key = t
-		done = true
+		did += 1
 	}
 
 	if t, ok := imr.replacementType(node.Value); ok {
 		node.Value = t
-		done = true
+		did += 1
 	}
 
-	if done {
+	if did == 2 {
 		return nil
 	}
 
