@@ -22,6 +22,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v1"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const VERSION = "0.3.0"
@@ -56,6 +57,9 @@ func main() {
 }
 
 func implement(genericFile, specFile string) {
+
+	genericFile = strings.TrimSpace(genericFile)
+	specFile = strings.TrimSpace(specFile)
 
 	typeProvider, err := NewFilePackageContext(specFile)
 
