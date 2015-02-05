@@ -159,19 +159,6 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 	return
 }
 
-//Find and return a field with a given name within a field list
-func FieldByName(list *ast.FieldList, name string) (field *ast.Field, found bool) {
-	for _, field = range list.List {
-		for _, ident := range field.Names {
-			if found = (ident.Name == name); found {
-				return
-			}
-		}
-	}
-	field = nil
-	return
-}
-
 func (imp *Implementor) relatedTypeName(t *ast.TypeSpec, imap ImplMap) string {
 
 	var (
@@ -197,4 +184,24 @@ func (imp *Implementor) relatedTypeName(t *ast.TypeSpec, imap ImplMap) string {
 	}
 
 	return strings.Replace(partialName, "_", implName, -1)
+}
+
+//Find and return a field with a given name within a field list
+func FieldByName(list *ast.FieldList, name string) (field *ast.Field, found bool) {
+	for _, field = range list.List {
+		for _, ident := range field.Names {
+			if found = (ident.Name == name); found {
+				return
+			}
+		}
+	}
+	field = nil
+	return
+}
+
+func ImportsOfImplMap(ctx *Context, imap ImplMap) (result ImportSpecs) {
+	for _, x := range imap {
+		result = append(result, ctx.ImportsOf(x))
+	}
+	return
 }
