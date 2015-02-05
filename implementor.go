@@ -142,7 +142,7 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 			ast.Walk(ImplRewriter{resultMap}, implAst.File)
 
 			imports := ImportsOfImplMap(imp.TypeProvider, resultMap)
-			for i := range imports {
+			for _, i := range imports {
 				implAst.AddImportFromSpec(i)
 			}
 
@@ -206,7 +206,7 @@ func FieldByName(list *ast.FieldList, name string) (field *ast.Field, found bool
 
 func ImportsOfImplMap(ctx *Context, imap ImplMap) (result ImportSpecs) {
 	for _, x := range imap {
-		result = append(result, ctx.ImportsOf(x))
+		result = append(result, ctx.ImportsOf(x)...)
 	}
 	return
 }
