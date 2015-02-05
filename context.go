@@ -154,6 +154,13 @@ func (c *Context) LookupType(ident string) (t *ast.TypeSpec, ok bool) {
 	return
 }
 
+func (c *Context) LookupFunc(ident string) (t *ast.FuncDecl, ok bool) {
+	if obj, exists := c.Lookup(ident); exists {
+		t, ok = obj.Decl.(*ast.FuncDecl)
+	}
+	return
+}
+
 func (c *Context) SetPackage(name string) {
 	c.File.Name = ast.NewIdent(name)
 }
