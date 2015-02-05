@@ -141,6 +141,11 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 
 			ast.Walk(ImplRewriter{resultMap}, implAst.File)
 
+			imports := ImportsOfImplMap(imp.TypeProvider, resultMap)
+			for i := range imports {
+				implAst.AddImportFromSpec(i)
+			}
+
 			//ensure that implementation is in the correct package
 			implAst.SetPackage(imp.TypeProvider.File.Name.Name)
 
