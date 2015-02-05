@@ -34,7 +34,7 @@ func (c *Context) Clone() (clone *Context, err error) {
 	return
 }
 
-type fileImports []*ast.ImportSpec
+type ImportSpecs []*ast.ImportSpec
 type funcDecls []*ast.FuncDecl
 
 type fileDecls []ast.Decl
@@ -77,7 +77,7 @@ func (c *Context) Lookup(ident string) (obj *ast.Object, ok bool) {
 }
 
 func (c *Context) LookupImport(ident string) (i *ast.ImportSpec, ok bool) {
-	var imports fileImports = c.File.Imports
+	var imports ImportSpecs = c.File.Imports
 	i, ok = imports.First(importSpecMatchesIdentifier(ident))
 	return
 }

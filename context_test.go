@@ -8,7 +8,7 @@ import (
 func Test_Lookup(t *testing.T) {
 	c, _ := NewFileContext("context.go")
 
-	for _, i := range []string{"Context", "fileImports", "NewFileContext"} {
+	for _, i := range []string{"Context", "ImportSpecs", "NewFileContext"} {
 		if _, ok := c.Lookup(i); !ok {
 			t.Error("Failed to find ", i)
 		}
@@ -28,7 +28,7 @@ func Test_LookupImport(t *testing.T) {
 func Test_LookupType(t *testing.T) {
 	c, _ := NewFileContext("context.go")
 
-	for _, i := range []string{"Context", "fileImports"} {
+	for _, i := range []string{"Context", "ImportSpecs"} {
 		if _, ok := c.LookupType(i); !ok {
 			t.Error("Failed to find ", i)
 		}
