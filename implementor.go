@@ -185,10 +185,48 @@ func (imp *Implementor) relatedTypeName(t *ast.TypeSpec, imap ImplMap) string {
 		implName = exprType.Name
 
 	default:
-		implName = ExprString(implExpr)
+		implName = NiceName(implExpr)
 	}
 
 	return strings.Replace(partialName, "_", implName, -1)
+}
+
+func NiceName(e ast.Expr) string {
+	//TODO: Woefully inadaquate. Total failure for function types, interfaces, struct types
+
+	// *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+	switch t := e.(type) {
+	case *ast.Ident:
+		return strings.Title(ExprString(e))
+
+	case *ast.ParenExpr:
+		return NiceName(t.X)
+
+	case *ast.SelectorExpr:
+		return NiceName(t.X)
+
+	case *ast.StarExpr:
+		return NiceName(t.X) + "Pointer"
+
+	case *ast.ChanType:
+		switch t.Dir {
+		case ast.SEND:
+			return NiceName(t.Value) + "SendChan"
+		case ast.RECV:
+			return NiceName(t.Value) + "RecvChan"
+		default:
+			return NiceName(t.Value) + "Chan"
+		}
+
+	case *ast.ArrayType:
+		return NiceName(t.Elt) + "Slice"
+
+	case *ast.MapType:
+		return NiceName(t.Value) + "MapBy" + strings.Title(NiceName(t.Key))
+
+	default:
+		return strings.Title(ExprString(e))
+	}
 }
 
 //Find and return a field with a given name within a field list
