@@ -77,7 +77,7 @@ When prompted about the lack of generics in Go, someone once quipped that they h
 
 A prime example of this is the Fan-In/Fan-Out concurrency pattern popular in Go. [This](http://blog.golang.org/pipelines) is a great primer on the pattern and pitfalls of implementing it. 
 
-To see how it's possible to abstract this complex pattern with goast, refer to the [Fan-In](https://github.com/jamesgarfield/goast/tree/master/example/fan_in) example located in this repository.
+To see how it's possible to abstract this complex pattern with goast, refer to the [Pipeline](https://github.com/jamesgarfield/goast/tree/master/example/pipeline) example located in this repository.
 
 
 ## Roadmap
@@ -97,5 +97,5 @@ goast is still in an alpha/RFC stage of development. Some features that are plan
 
 I originally got interested in code generation as a method of genericty in Go when I learned about the [gen](http://clipperhouse.github.io/gen/) package from clipperhouse. When to Go team first announced Go 1.4 and the go:generate proposal, it planted the seed of the idea for goast in my brain and initiated my research into how it might work. In the intervening time I found [gotgo](https://github.com/droundy/gotgo), and more recently (and also quite close to my goals) the [gonerics](https://github.com/bouk/gonerics) package. As projects in the same area as what goast explores, they were all valuble for research and inspiration, as well for providing a contrast against which I wanted to differentiate.
 
-I'd also like to specificaly thank Rob Pike for for being such a staunch beleiver in a world of generic programming without language level generics. Without all the constant assertions that there were "other ways", I most likely would not have started down this path.
+I'd also like to specificaly thank Rob Pike for for being such a staunch believer in a world of generic programming without language level generics. Without all the constant assertions that there were "other ways", I most likely would not have started down this path.
 
