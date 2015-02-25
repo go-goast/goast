@@ -62,6 +62,29 @@ func (pip Pipeline) Filter(done <-chan bool, fn func(X) bool) Pipeline {
 	return out
 }
 
+//Add a process onto the pipeline
+func (pip Pipeline) Pipe(done <-chan bool, fn func(X) X) Pipeline {
+	out := make(chan X)
+
+	go func() {
+		defer close(out)
+		for {
+			select {
+			case val := <-pip:
+				select {
+					out <- fn(val)
+				case <-done:
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	}
+
+	return out
+}
+
 //Create a worker pipeline on the current one
 func (pip Pipeline) worker(done <-chan bool, fn func(X) X) Pipeline {
 	out := make(chan X)
@@ -111,6 +134,14 @@ func (fan _Fan) FanIn(done <-chan bool) Pipeline {
 func (fan _Fan) Filter(done <-chan bool, fn func(X) bool) (result _Fan) {
 	for _, pipe := range fan {
 		result = append(result, pipe.Filter(done, fn))
+	}
+	return
+}
+
+//Add a process onto each worker in this Fan
+func (fan _Fan) Pipe(done <-chan bool, fn func(X)X) (result _Fan) {
+	for _, pipe := range fan {
+		result := append(result, pipe.Pipe(done, fn))
 	}
 	return
 }
