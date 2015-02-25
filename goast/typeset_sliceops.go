@@ -19,6 +19,9 @@ func (s typeSet) Len() int {
 func (s typeSet) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
+func (s typeSet) Sort(less func(*ast.TypeSpec, *ast.TypeSpec) bool) {
+	sort.Sort(typeSetSorter{s, less})
+}
 func (s typeSet) All(fn func(*ast.TypeSpec) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
@@ -59,9 +62,6 @@ func (s typeSet) First(fn func(*ast.TypeSpec) bool) (match *ast.TypeSpec, found 
 	}
 	return
 }
-func (s typeSet) Sort(less func(*ast.TypeSpec, *ast.TypeSpec) bool) {
-	sort.Sort(typeSetSorter{s, less})
-}
 func (s typeSet) Where(fn func(*ast.TypeSpec) bool) (result typeSet) {
 	for _, v := range s {
 		if fn(v) {
@@ -69,4 +69,19 @@ func (s typeSet) Where(fn func(*ast.TypeSpec) bool) (result typeSet) {
 		}
 	}
 	return result
+}
+func (s *typeSet) Extract(fn func(*ast.TypeSpec) bool) (removed typeSet) {
+	pos := 0
+	kept := *s
+	for i := 0; i < kept.Len(); i++ {
+		if fn(kept[i]) {
+			removed = append(removed, kept[i])
+		} else {
+			kept[pos] = kept[i]
+			pos++
+		}
+	}
+	kept = kept[:pos:pos]
+	*s = kept
+	return removed
 }

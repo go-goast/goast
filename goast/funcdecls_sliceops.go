@@ -19,6 +19,9 @@ func (s funcDecls) Len() int {
 func (s funcDecls) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
+func (s funcDecls) Sort(less func(*ast.FuncDecl, *ast.FuncDecl) bool) {
+	sort.Sort(funcDeclsSorter{s, less})
+}
 func (s funcDecls) All(fn func(*ast.FuncDecl) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
@@ -59,9 +62,6 @@ func (s funcDecls) First(fn func(*ast.FuncDecl) bool) (match *ast.FuncDecl, foun
 	}
 	return
 }
-func (s funcDecls) Sort(less func(*ast.FuncDecl, *ast.FuncDecl) bool) {
-	sort.Sort(funcDeclsSorter{s, less})
-}
 func (s funcDecls) Where(fn func(*ast.FuncDecl) bool) (result funcDecls) {
 	for _, v := range s {
 		if fn(v) {
@@ -69,4 +69,19 @@ func (s funcDecls) Where(fn func(*ast.FuncDecl) bool) (result funcDecls) {
 		}
 	}
 	return result
+}
+func (s *funcDecls) Extract(fn func(*ast.FuncDecl) bool) (removed funcDecls) {
+	pos := 0
+	kept := *s
+	for i := 0; i < kept.Len(); i++ {
+		if fn(kept[i]) {
+			removed = append(removed, kept[i])
+		} else {
+			kept[pos] = kept[i]
+			pos++
+		}
+	}
+	kept = kept[:pos:pos]
+	*s = kept
+	return removed
 }

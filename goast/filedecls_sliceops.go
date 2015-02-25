@@ -19,6 +19,9 @@ func (s fileDecls) Len() int {
 func (s fileDecls) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
+func (s fileDecls) Sort(less func(ast.Decl, ast.Decl) bool) {
+	sort.Sort(fileDeclsSorter{s, less})
+}
 func (s fileDecls) All(fn func(ast.Decl) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
@@ -59,9 +62,6 @@ func (s fileDecls) First(fn func(ast.Decl) bool) (match ast.Decl, found bool) {
 	}
 	return
 }
-func (s fileDecls) Sort(less func(ast.Decl, ast.Decl) bool) {
-	sort.Sort(fileDeclsSorter{s, less})
-}
 func (s fileDecls) Where(fn func(ast.Decl) bool) (result fileDecls) {
 	for _, v := range s {
 		if fn(v) {
@@ -69,4 +69,19 @@ func (s fileDecls) Where(fn func(ast.Decl) bool) (result fileDecls) {
 		}
 	}
 	return result
+}
+func (s *fileDecls) Extract(fn func(ast.Decl) bool) (removed fileDecls) {
+	pos := 0
+	kept := *s
+	for i := 0; i < kept.Len(); i++ {
+		if fn(kept[i]) {
+			removed = append(removed, kept[i])
+		} else {
+			kept[pos] = kept[i]
+			pos++
+		}
+	}
+	kept = kept[:pos:pos]
+	*s = kept
+	return removed
 }

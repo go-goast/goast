@@ -18,6 +18,9 @@ func (s SourceSet) Len() int {
 func (s SourceSet) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
+func (s SourceSet) Sort(less func(*SourceCode, *SourceCode) bool) {
+	sort.Sort(SourceSetSorter{s, less})
+}
 func (s SourceSet) All(fn func(*SourceCode) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
@@ -58,9 +61,6 @@ func (s SourceSet) First(fn func(*SourceCode) bool) (match *SourceCode, found bo
 	}
 	return
 }
-func (s SourceSet) Sort(less func(*SourceCode, *SourceCode) bool) {
-	sort.Sort(SourceSetSorter{s, less})
-}
 func (s SourceSet) Where(fn func(*SourceCode) bool) (result SourceSet) {
 	for _, v := range s {
 		if fn(v) {
@@ -68,4 +68,19 @@ func (s SourceSet) Where(fn func(*SourceCode) bool) (result SourceSet) {
 		}
 	}
 	return result
+}
+func (s *SourceSet) Extract(fn func(*SourceCode) bool) (removed SourceSet) {
+	pos := 0
+	kept := *s
+	for i := 0; i < kept.Len(); i++ {
+		if fn(kept[i]) {
+			removed = append(removed, kept[i])
+		} else {
+			kept[pos] = kept[i]
+			pos++
+		}
+	}
+	kept = kept[:pos:pos]
+	*s = kept
+	return removed
 }

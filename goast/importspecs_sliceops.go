@@ -19,6 +19,9 @@ func (s ImportSpecs) Len() int {
 func (s ImportSpecs) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
+func (s ImportSpecs) Sort(less func(*ast.ImportSpec, *ast.ImportSpec) bool) {
+	sort.Sort(ImportSpecsSorter{s, less})
+}
 func (s ImportSpecs) All(fn func(*ast.ImportSpec) bool) bool {
 	for _, v := range s {
 		if !fn(v) {
@@ -59,9 +62,6 @@ func (s ImportSpecs) First(fn func(*ast.ImportSpec) bool) (match *ast.ImportSpec
 	}
 	return
 }
-func (s ImportSpecs) Sort(less func(*ast.ImportSpec, *ast.ImportSpec) bool) {
-	sort.Sort(ImportSpecsSorter{s, less})
-}
 func (s ImportSpecs) Where(fn func(*ast.ImportSpec) bool) (result ImportSpecs) {
 	for _, v := range s {
 		if fn(v) {
@@ -69,4 +69,19 @@ func (s ImportSpecs) Where(fn func(*ast.ImportSpec) bool) (result ImportSpecs) {
 		}
 	}
 	return result
+}
+func (s *ImportSpecs) Extract(fn func(*ast.ImportSpec) bool) (removed ImportSpecs) {
+	pos := 0
+	kept := *s
+	for i := 0; i < kept.Len(); i++ {
+		if fn(kept[i]) {
+			removed = append(removed, kept[i])
+		} else {
+			kept[pos] = kept[i]
+			pos++
+		}
+	}
+	kept = kept[:pos:pos]
+	*s = kept
+	return removed
 }
