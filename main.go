@@ -19,6 +19,7 @@ package main
 
 import (
 	"fmt"
+	"go/build"
 	"gopkg.in/alecthomas/kingpin.v1"
 	"os"
 	"path/filepath"
@@ -56,22 +57,57 @@ func main() {
 
 }
 
-func implement(genericFile, specFile string) {
+func implement(genericPath, specFile string) {
 
-	genericFile = strings.TrimSpace(genericFile)
 	specFile = strings.TrimSpace(specFile)
-
 	typeProvider, err := NewFilePackageContext(specFile)
-
 	if err != nil {
-		fmt.Println("Error type provider file: ", err)
+		fmt.Println("Error in type provider file: ", err)
 		return
 	}
 
+	genericPath = strings.TrimSpace(genericPath)
+
 	imp := NewImplementor(typeProvider)
 
-	fmt.Printf("Implement %s on %s\n", genericFile, specFile)
-	RewriteFile(genericFile, filepath.Dir(specFile), imp)
+	files, err := targetGenericSource(genericPath)
+	if err != nil {
+		fmt.Printf("Failed to generate %s\n%s", genericPath, err.Error())
+		return
+	}
+
+	fmt.Printf("Implement %s on %s\n", genericPath, specFile)
+	for _, genericFile := range files {
+		RewriteFile(genericFile, filepath.Dir(specFile), imp)
+	}
+
+}
+
+func targetGenericSource(path string) ([]string, error) {
+	if strings.HasSuffix(path, ".go") {
+		if _, err := os.Stat(path); err == nil {
+			return []string{path}, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	pkg, err := build.Default.Import(path, workingDir, 0)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot find path %s locally or in GOPATH. Error: %s", path, err.Error())
+	}
+
+	files := []string{}
+	for _, file := range pkg.GoFiles {
+		files = append(files, filepath.Join(pkg.Dir, file))
+	}
+
+	return files, nil
 }
 
 func printFileDecls(path string) {
