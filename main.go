@@ -26,7 +26,7 @@ import (
 	"strings"
 )
 
-const VERSION = "0.3.4"
+const VERSION = "0.3.6"
 
 func main() {
 	var (
