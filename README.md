@@ -68,16 +68,20 @@ func (s Ints) Filter(fn func(int)bool) (result Ints) {
 }
 ```
 
-A more complete set of slice utilities can be seen in the internal [sliceutil.go](https://github.com/jamesgarfield/goast/blob/master/gen/sliceutil.go) file, and are used throughout the goast library. [Example](https://github.com/jamesgarfield/goast/blob/master/filedecls_sliceutil.go).
+A more complete set of slice operations can be seen in the [sliceops](https://github.com/jamesgarfield/sliceops) package.
 
 
 ## Complex Example
 
-When prompted about the lack of generics in Go, someone once quipped that they have never found writing containers like lists of ints and maps of strings an unbearable burden and that don't they spend a lot of time struggling with those issues. This may be true, but I think it largely ignores that there are much more complex algorithms that a developer has a much larger chance of introducing bugs into. (In fairness the same discussion also prompted me to look beyond types for methods of generic programming.)
+Vanilla iteration patterns aren't exciting enough for you? 
 
-A prime example of this is the Fan-In/Fan-Out concurrency pattern popular in Go. [This](http://blog.golang.org/pipelines) is a great primer on the pattern and pitfalls of implementing it. 
+Want something more Go-centric, maybe even concurrency based? 
 
-To see how it's possible to abstract this complex pattern with goast, refer to the [Pipeline](https://github.com/jamesgarfield/goast/tree/master/example/pipeline) example located in this repository.
+How about a Fan-Out/Fan-OIn Concurrent Pipeline?
+
+If you're not familiar with pipelines, [this](http://blog.golang.org/pipelines) is a great primer on the pattern and pitfalls of implementing it. The concept is strightforward, but it's not the kind of thing I can see trusting myself to write repeatedly.
+
+To see how it's possible to abstract this complex pattern with goast, refer to the [Pipeline](https://github.com/jamesgarfield/goast/tree/master/examples/pipeline) example located in this repository.
 
 
 ## Roadmap
