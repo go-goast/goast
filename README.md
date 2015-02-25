@@ -77,7 +77,7 @@ Vanilla iteration patterns aren't exciting enough for you?
 
 Want something more Go-centric, maybe even concurrency based? 
 
-How about a Fan-Out/Fan-OIn Concurrent Pipeline?
+How about a Fan-Out/Fan-In Concurrent Pipeline?
 
 If you're not familiar with pipelines, [this](http://blog.golang.org/pipelines) is a great primer on the pattern and pitfalls of implementing it. The concept is strightforward, but it's not the kind of thing I can see trusting myself to write repeatedly.
 
