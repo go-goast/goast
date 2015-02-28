@@ -31,16 +31,25 @@ func (pip IntPipe) Filter(done <-chan bool, fn func(int) bool) IntPipe {
 	out := make(chan int)
 	go func() {
 		defer close(out)
-		for {
-			select {
-			case val := <-pip:
-				if fn(val) {
-					select {
-					case out <- val:
-					case <-done:
-						return
-					}
+		for val := range pip {
+			if fn(val) {
+				select {
+				case out <- val:
+				case <-done:
+					return
 				}
+			}
+		}
+	}()
+	return out
+}
+func (pip IntPipe) Pipe(done <-chan bool, fn func(int) int) IntPipe {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for val := range pip {
+			select {
+			case out <- fn(val):
 			case <-done:
 				return
 			}
@@ -88,6 +97,12 @@ func (fan IntPipeFan) FanIn(done <-chan bool) IntPipe {
 func (fan IntPipeFan) Filter(done <-chan bool, fn func(int) bool) (result IntPipeFan) {
 	for _, pipe := range fan {
 		result = append(result, pipe.Filter(done, fn))
+	}
+	return
+}
+func (fan IntPipeFan) Pipe(done <-chan bool, fn func(int) int) (result IntPipeFan) {
+	for _, pipe := range fan {
+		result = append(result, pipe.Pipe(done, fn))
 	}
 	return
 }
