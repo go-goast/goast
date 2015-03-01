@@ -37,6 +37,8 @@ func NewImplementor(typeProvider *Context) *Implementor {
 
 type typeSet []*ast.TypeSpec
 
+type implSet []ImplMap
+
 //When implementing a generic file, types get matched from most-to-least complex
 //As types are solved for, any 'subtypes' they have are also solved for
 //e.g. type Collection []I gets solved and both Collection and I are known at the end
@@ -78,7 +80,7 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 	//Test each type in the provider file for implementation
 	for _, c := range candidateTypes {
 
-		ok, resultMap, err := Implement(implContext, NewImplMap(), c, primaryGeneric)
+		ok, primaryMap, err := Implement(implContext, NewImplMap(), c, primaryGeneric)
 
 		//If this candidate can't implement the primary generic type, there is no more to do
 		//Save the error in case there is no implementation possible
@@ -93,65 +95,110 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 		})
 
 		matched := 0
-		for _, g := range implTypes {
-			//types that already have mappings are already solved for
-			if _, ok := resultMap[g.Name.Name]; ok {
-				matched++
-				continue
-			}
 
-			//check each specification type to see if it satisfies the requirements for this generic type
-			for _, s := range specTypes {
-				ok, resultMap, err = Implement(implContext, resultMap, s, g)
-				if ok {
-					matched++
-					break
-				} else {
-					errors = append(errors, err)
+		impls := implSet{primaryMap}
+
+		for _, g := range implTypes {
+			subimpls := implSet{}
+
+			foundMatch := false
+
+			for _, currentMap := range impls {
+				//types that already have mappings are already solved for
+				if _, ok := currentMap[g.Name.Name]; ok {
+					subimpls = append(subimpls, currentMap)
+					if !foundMatch {
+						foundMatch = true
+						matched += 1
+					}
+					continue
 				}
+
+				//check each specification type to see if it satisfies the requirements for this generic type
+				for _, s := range specTypes {
+					ok, resultMap, err := Implement(implContext, currentMap, s, g)
+					if ok {
+						subimpls = append(subimpls, resultMap)
+						if !foundMatch {
+							foundMatch = true
+							matched += 1
+						}
+						continue
+					} else {
+						errors = append(errors, err)
+					}
+				}
+
 			}
 
 			//being unable to satify a generic type indicates we can't implement with the current combination of types
 			//Save an error in case there is no implementation possible
-			if _, ok := resultMap[g.Name.Name]; !ok {
+			if len(subimpls) == 0 {
 				errors = append(errors, fmt.Errorf("Unable to satisfy generic type %s with any of the specification types.", g.Name.Name))
 				break
 			}
+
+			//iterate on the new set of impls during the next iteration
+			impls = subimpls
+
 		}
 
 		//If all generic types are mapped, rewrite the generic AST with the provided types
 		if matched == implTypes.Len() {
-
-			implAst, err := gen.Clone()
-			if err != nil {
-				errors = append(errors, err)
-				continue
+			impPkg := &ast.Package{
+				Name:  imp.TypeProvider.File.Name.Name,
+				Files: make(map[string]*ast.File),
 			}
 
-			//Filter implemented types out
-			//Do this prior to renaming related types so we can still identify them
-			//ast.FilterFile filters out import statements...always, so use custom filter method https://github.com/golang/go/issues/9248
-			filterTypeSpecs(implAst.File, func(t *ast.TypeSpec) bool { return !isImplType(t) })
-
-			//Generate names for all related types
-			relatedTypes.Each(func(t *ast.TypeSpec) {
-				specName := imp.relatedTypeName(t, resultMap)
-				resultMap.Store(t.Name.Name, ast.NewIdent(specName))
-			})
-
-			ast.Walk(ImplRewriter{resultMap}, implAst.File)
-
-			imports := ImportsOfImplMap(imp.TypeProvider, resultMap)
-			for _, i := range imports {
-				implAst.AddImportFromSpec(i)
-			}
-
-			//ensure that implementation is in the correct package
-			implAst.SetPackage(imp.TypeProvider.File.Name.Name)
+			relatedImpl := map[string]bool{}
 
 			name := c.Name.Name
 
-			result = append(result, &SourceCode{implAst, name})
+			for n, currentMap := range impls {
+				implAst, err := gen.Clone()
+				if err != nil {
+					errors = append(errors, err)
+					continue
+				}
+
+				//Filter impl types & previously implemented related types out of the current ast
+				//Do this prior to renaming related types so we can still identify them
+				//ast.FilterFile filters out import statements...always, so use custom filter method https://github.com/golang/go/issues/9248
+				filterTypeSpecs(implAst.File, func(t *ast.TypeSpec) bool {
+					if isRelatedType(t) {
+						specName := imp.relatedTypeName(t, currentMap)
+						_, exist := relatedImpl[specName]
+						relatedImpl[specName] = true
+						return !exist
+					}
+					return !isImplType(t)
+				})
+
+				//Generate names for all related types
+				relatedTypes.Each(func(t *ast.TypeSpec) {
+					specName := imp.relatedTypeName(t, currentMap)
+					id := ast.NewIdent(specName)
+					currentMap.Store(t.Name.Name, id)
+				})
+
+				ast.Walk(ImplRewriter{currentMap}, implAst.File)
+
+				imports := ImportsOfImplMap(imp.TypeProvider, currentMap)
+				for _, i := range imports {
+					implAst.AddImportFromSpec(i)
+				}
+
+				//ensure that implementation is in the correct package
+				implAst.SetPackage(imp.TypeProvider.File.Name.Name)
+				fileName := fmt.Sprintf("%s_%d.go", name, n)
+				impPkg.Files[fileName] = implAst.File
+			}
+
+			mergedAst := ast.MergePackageFiles(impPkg, ast.FilterFuncDuplicates|ast.FilterImportDuplicates)
+			mergedContext, _ := gen.Clone()
+			mergedContext.File = mergedAst
+
+			result = append(result, &SourceCode{mergedContext, name})
 		}
 	}
 
@@ -168,27 +215,35 @@ func (imp *Implementor) relatedTypeName(t *ast.TypeSpec, imap ImplMap) string {
 
 	var (
 		implExpr    ast.Expr
-		found       bool
-		implName    string
-		partialName string = t.Name.Name
+		relatedName string = t.Name.Name
 	)
+
+	n := strings.Count(relatedName, "_")
+
+	names := []ast.Expr{}
 
 	ast.Inspect(t, func(node ast.Node) bool {
 		if id, ok := node.(*ast.Ident); ok {
-			implExpr, found = imap[id.Name]
+			if implExpr, found := imap[id.Name]; found {
+				names = append(names, implExpr)
+			}
 		}
-		return !found
+		return n != len(names)
 	})
 
-	switch exprType := implExpr.(type) {
-	case *ast.Ident:
-		implName = exprType.Name
+	for _, expr := range names {
+		var implName string
+		switch exprType := expr.(type) {
+		case *ast.Ident:
+			implName = exprType.Name
 
-	default:
-		implName = NiceName(implExpr)
+		default:
+			implName = NiceName(implExpr)
+		}
+		relatedName = strings.Replace(relatedName, "_", implName, 1)
 	}
 
-	return strings.Replace(partialName, "_", implName, -1)
+	return relatedName
 }
 
 func NiceName(e ast.Expr) string {
