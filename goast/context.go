@@ -6,7 +6,7 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"golang.org/x/tools/astutil"
+	"golang.org/x/tools/go/ast/astutil"
 	"path"
 	"path/filepath"
 	"strconv"
