@@ -280,6 +280,18 @@ func main() {
 }
 ```
 
+### Multiple Type Parameters
+
+Any number of types are allowed to be specified in template code. For each desired type, assign a new identifier to `interface{}`.
+
+The following defines a type that *maps any type to a slice of any other type*
+
+```go
+type K interface{}
+type V interface{}
+type SliceMap map[K][]V
+```
+
 ### Partial Structs
 
 `goast write impl` also allows for an amount of structural duck-typing with partially defined structs. This provides a type-safe ability to say "If it looks like X, it can do Y". 
