@@ -244,11 +244,39 @@ func (s Slice) Sort(less func(I, I) bool) {
 }
 ```
 
-When that is compiled against a type such as `type Ints []int`, the `Ints` type gets a `Sort(func(int, int)bool)` method, and a Related Type that looks like the following is generated
+When that is compiled against a type such as `type Contacts []*Contact`, the `Contacts` type gets a `Sort(func(*Contact, *Contact)bool)` method, and a Related Type that looks like the following is generated
 ```go
-type IntsSorter struct {
-	Ints
-	LessFunc	func(int, int) bool
+type ContactsSorter struct {
+	Contacts
+	LessFunc	func(*contact, *Contact) bool
+}
+```
+
+This enables easy arbitrary sorts
+
+```go
+//go:generate goast write impl goast.net/x/sort
+
+type Contact struct {
+	Id    int
+	First string
+	Last  string
+	Email string
+}
+
+type Contacts []*Contact
+
+func main() {
+
+	set := getContacts()
+	
+	set.Sort(func(a, b *Contact)bool {
+		return a.Id < b.Id
+	})
+
+	set.Sort(func(a, b *Contact)bool {
+		return a.Last > b.Last
+	})
 }
 ```
 
