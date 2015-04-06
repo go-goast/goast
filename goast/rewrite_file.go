@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-//go:generate goast write impl github.com/jamesgarfield/sliceops
+//go:generate goast write impl --prefix=goast_ goast.net/x/iter
 
 //name does not definitely indicate the resulting filename
 //it merely acts as a unique identifer that can be used in the filename

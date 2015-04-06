@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-//go:generate goast write impl github.com/jamesgarfield/sliceops
+//go:generate goast write impl --prefix=goast_ goast.net/x/iter
 
 type Context struct {
 	*ast.File
