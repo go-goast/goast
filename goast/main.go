@@ -49,7 +49,7 @@ func main() {
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case writeImpl.FullCommand():
-		implement(*writeImplGeneric, *writeImplSpec, writeConfig{*writePrefix, *writeSuffix})
+		implement(*writeImplGeneric, *writeImplSpec, writeConfig{*writeImplPrefix, *writeImplSuffix})
 
 	case printDecls.FullCommand():
 		printFileDecls(*printDeclsFile)
