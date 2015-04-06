@@ -325,6 +325,20 @@ type Process {
 }
 ```
 
+### File Naming Control
+
+It can be useful for organizational purposes for generated files to have a naming scheme that identifies them as a generated file. `goast` provides the `--prefix` and `--suffix` flags on the `impl` sub-command to control this behavior.
+
+Example: The following produces a file named `gen_ints_iter.go`
+
+```go
+package main
+
+//goast write impl --prefix=gen_ goast.net/x/iter
+
+type Ints []int
+```
+
 ## Roadmap
 
 goast is still in an alpha/RFC stage of development. Some features that are planned for v1 are
@@ -332,7 +346,6 @@ goast is still in an alpha/RFC stage of development. Some features that are plan
 * Projection [Issue](https://github.com/go-goast/goast/issues/4)
 * Pruning. [Issue](https://github.com/go-goast/goast/issues/6)
 * Support for comments. [Issue](https://github.com/go-goast/goast/issues/5)
-* File naming control [Issue](https://github.com/go-goast/goast/issues/7)
 
 
 ## History and acknowledgements
