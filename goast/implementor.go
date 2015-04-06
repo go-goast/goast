@@ -24,7 +24,8 @@ import (
 	"strings"
 )
 
-//go:generate goast write impl github.com/jamesgarfield/sliceops
+//go:generate goast write impl --prefix=goast_ goast.net/x/iter
+//go:generate goast write impl --prefix=goast_ goast.net/x/sort
 
 type Implementor struct {
 	TypeProvider *Context
@@ -203,7 +204,7 @@ func (imp *Implementor) Transform(gen *Context) (result SourceSet, ok bool, erro
 	}
 
 	//If there are any results, an implementation was found and errors can be cleared
-	if result.Len() != 0 {
+	if len(result) != 0 {
 		errors = []error{}
 		ok = true
 	}

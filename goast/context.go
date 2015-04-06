@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-//go:generate goast write impl github.com/jamesgarfield/sliceops
+//go:generate goast write impl --prefix=goast_ goast.net/x/iter
 
 type Context struct {
 	*ast.File
@@ -264,7 +264,7 @@ func (c *Context) importsOfSelector(x *ast.SelectorExpr) (result ImportSpecs) {
 
 func (c *Context) AddImportFromSpec(spec *ast.ImportSpec) {
 	newImport, _ := strconv.Unquote(spec.Path.Value)
-	astutil.AddImport(token.NewFileSet(), c.File, newImport)
+	astutil.AddImport(c.FileSet, c.File, newImport)
 }
 
 //Parse a given source file, and its enclosing package directory

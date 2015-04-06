@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-//go:generate goast write impl github.com/jamesgarfield/sliceops
+//go:generate goast write impl --prefix=goast_ goast.net/x/iter
 
 //name does not definitely indicate the resulting filename
 //it merely acts as a unique identifer that can be used in the filename
@@ -42,7 +42,11 @@ type AstTransform interface {
 	Transform(*Context) (SourceSet, bool, []error)
 }
 
-func RewriteFile(genericSourceFile, outputDirectory string, t AstTransform) {
+type writeConfig struct {
+	Prefix, Suffix string
+}
+
+func RewriteFile(genericSourceFile, outputDirectory string, t AstTransform, cfg writeConfig) {
 
 	gen, err := NewFileContext(genericSourceFile)
 	if err != nil {
@@ -56,7 +60,8 @@ func RewriteFile(genericSourceFile, outputDirectory string, t AstTransform) {
 	}
 
 	codes.Each(func(s *SourceCode) {
-		s.Name = strings.ToLower(s.Name + "_" + filepath.Base(genericSourceFile))
+		srcName := strings.TrimSuffix(filepath.Base(genericSourceFile), filepath.Ext(genericSourceFile))
+		s.Name = strings.ToLower(fmt.Sprintf("%s%s_%s%s.go", cfg.Prefix, s.Name, srcName, cfg.Suffix))
 	})
 
 	for _, source := range codes {

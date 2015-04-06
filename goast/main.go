@@ -32,10 +32,13 @@ func main() {
 	var (
 		app = kingpin.New("goast", "An AST utility for Go")
 
-		writeCmd         = app.Command("write", "Generate code with various AST transformations")
+		writeCmd = app.Command("write", "Generate code with various AST transformations")
+
 		writeImpl        = writeCmd.Command("impl", "Generate an implementation of a generically defined file")
 		writeImplGeneric = writeImpl.Arg("generic", "Generic file to implement").Required().String()
-		writeImplSpec    = writeImpl.Arg("spec", "Spec file that provides types to the generic file").Default(os.ExpandEnv("$GOFILE")).String()
+		writeImplSpec    = writeImpl.Arg("spec", "Spec file that provides types to the generic file. Defaults to $GOFILE during go:generate.").Default(os.ExpandEnv("$GOFILE")).String()
+		writeImplPrefix  = writeImpl.Flag("prefix", "Prefix for generated files").Default("").String()
+		writeImplSuffix  = writeImpl.Flag("suffix", "Suffix for generated files").Default("").String()
 
 		printCmd       = app.Command("print", "Print various representations of an ast to stdout")
 		printDecls     = printCmd.Command("decls", "Print a summary of the top level declarations of a file")
@@ -46,7 +49,7 @@ func main() {
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case writeImpl.FullCommand():
-		implement(*writeImplGeneric, *writeImplSpec)
+		implement(*writeImplGeneric, *writeImplSpec, writeConfig{*writeImplPrefix, *writeImplSuffix})
 
 	case printDecls.FullCommand():
 		printFileDecls(*printDeclsFile)
@@ -57,7 +60,7 @@ func main() {
 
 }
 
-func implement(genericPath, specFile string) {
+func implement(genericPath, specFile string, cfg writeConfig) {
 
 	specFile = strings.TrimSpace(specFile)
 	typeProvider, err := NewFilePackageContext(specFile)
@@ -78,7 +81,7 @@ func implement(genericPath, specFile string) {
 
 	fmt.Printf("Implement %s on %s\n", genericPath, specFile)
 	for _, genericFile := range files {
-		RewriteFile(genericFile, filepath.Dir(specFile), imp)
+		RewriteFile(genericFile, filepath.Dir(specFile), imp, cfg)
 	}
 
 }
