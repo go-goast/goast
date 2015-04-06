@@ -86,7 +86,7 @@ func main() {
 }
 ```
 
-Our intrepid gohper is a little sad about needing to use type casting, but is surprised to discover the following compile error `main.go:18: cannot use []int literal (type []int) as type Slice in assignment` ([Playground](http://play.golang.org/p/S5elysXjrx)). Surely a slice of ints provides the same interface as a slice of empty interface? The explanation for this is that an `[]int` cannot be assigned to an `[]interface{}` because they have different memory layouts. This is unfortunate because algorithmically the code is correct and it seems intuitive that it could be interpreted that way. 
+Our intrepid gopher is a little sad about needing to use type casting, but is surprised to discover the following compile error `main.go:18: cannot use []int literal (type []int) as type Slice in assignment` ([Playground](http://play.golang.org/p/S5elysXjrx)). Surely a slice of ints provides the same interface as a slice of empty interface? The explanation for this is that an `[]int` cannot be assigned to an `[]interface{}` because they have different memory layouts. This is unfortunate because algorithmically the code is correct and it seems intuitive that it could be interpreted that way. 
 
 It is possible to [rewrite](http://play.golang.org/p/IpvXBKSxpS) the above by using `var s Slice = []interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9}`, but converting back and forth between slice types on top of already needing to do type casting is onerous and a great place for bugs to creep in.
 
@@ -165,7 +165,7 @@ If you're not familiar with pipelines, [this](http://blog.golang.org/pipelines) 
 
 With goast you can have type-safe pipeline facilities for any type by defining a channel for that type and generating from the corresponding meta-code. A simple implementation of this pattern is provided in the [pipeline](http://goast.net/x/pipeline) package.
 
-The following is a simple example of concurrent, paralell squaring of a range of numbers
+The following is a simple example of concurrent, parallel squaring of a range of numbers
 
 ```go
 package main
@@ -208,7 +208,7 @@ func main() {
 
 ### Related Types
 
-goast also allows for the generation of derived composite types based on the provided type information, and calls these Realted Types. Unlike other types seen in examples so far, the end-user does not need to provide an implementation of the Related Types, only the concrete types used to replace the generic segments of it. To accomlish this, goast also needs to ability to generate new, unique names for Related Types, and allows the meta-code developer to specify how these names should look using a convention of leaving a space for type name replacement with an '_' in the identifier of the Related type
+goast also allows for the generation of derived composite types based on the provided type information, and calls these Related Types. Unlike other types seen in examples so far, the end-user does not need to provide an implementation of the Related Types, only the concrete types used to replace the generic segments of it. To accomlish this, goast also needs to ability to generate new, unique names for Related Types, and allows the meta-code developer to specify how these names should look using a convention of leaving a space for type name replacement with an '_' in the identifier of the Related type
 
 The easy example of this would be a slice sorter Related Type
 
@@ -244,12 +244,52 @@ func (s Slice) Sort(less func(I, I) bool) {
 }
 ```
 
-When that is compiled against a type such as `type Ints []int`, the `Ints` type gets a `Sort(func(int, int)bool)` method, and a Related Type that looks like the following is generated
+When that is compiled against a type such as `type Contacts []*Contact`, the `Contacts` type gets a `Sort(func(*Contact, *Contact)bool)` method, and a Related Type that looks like the following is generated
 ```go
-type IntsSorter struct {
-	Ints
-	LessFunc	func(int, int) bool
+type ContactsSorter struct {
+	Contacts
+	LessFunc	func(*contact, *Contact) bool
 }
+```
+
+This enables easy arbitrary sorts
+
+```go
+//go:generate goast write impl goast.net/x/sort
+
+type Contact struct {
+	Id    int
+	First string
+	Last  string
+	Email string
+}
+
+type Contacts []*Contact
+
+func main() {
+
+	set := getContacts()
+	
+	set.Sort(func(a, b *Contact)bool {
+		return a.Id < b.Id
+	})
+
+	set.Sort(func(a, b *Contact)bool {
+		return a.Last > b.Last
+	})
+}
+```
+
+### Multiple Type Parameters
+
+Any number of types are allowed to be specified in template code. For each desired type, assign a new identifier to `interface{}`.
+
+The following defines a type that *maps any type to a slice of any other type*
+
+```go
+type K interface{}
+type V interface{}
+type SliceMap map[K][]V
 ```
 
 ### Partial Structs
@@ -289,10 +329,10 @@ type Process {
 
 goast is still in an alpha/RFC stage of development. Some features that are planned for v1 are
 
-* Projection [Issue](https://github.com/jamesgarfield/goast/issues/4)
-* Pruning. [Issue](https://github.com/jamesgarfield/goast/issues/6)
-* Support for comments. [Issue](https://github.com/jamesgarfield/goast/issues/5)
-* File naming control [Issue](https://github.com/jamesgarfield/goast/issues/7)
+* Projection [Issue](https://github.com/go-goast/goast/issues/4)
+* Pruning. [Issue](https://github.com/go-goast/goast/issues/6)
+* Support for comments. [Issue](https://github.com/go-goast/goast/issues/5)
+* File naming control [Issue](https://github.com/go-goast/goast/issues/7)
 
 
 ## History and acknowledgements
