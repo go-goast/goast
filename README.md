@@ -344,6 +344,7 @@ type Ints []int
 goast is still in an alpha/RFC stage of development. Some features that are planned for v1 are
 
 * Projection [Issue](https://github.com/go-goast/goast/issues/4)
+* Concepts [Issue](https://github.com/go-goast/goast/issues/13)
 * Pruning. [Issue](https://github.com/go-goast/goast/issues/6)
 * Support for comments. [Issue](https://github.com/go-goast/goast/issues/5)
 
