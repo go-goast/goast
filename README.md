@@ -148,7 +148,7 @@ type Ints []int
 
 func main() {
 	var s Ints = []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-	evens := s.Where(func(val int) bool { return i%2 == 0 })
+	evens := s.Where(func(val int) bool { return val%2 == 0 })
 	fmt.Printf("Evens: %+v\n", evens)
 }
 ```
