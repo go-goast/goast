@@ -6,7 +6,7 @@ import (
 
 //Type detection in impl finds all valid type targets
 //goast.net/x/iter looks for a type that matchs []interface{}
-//Botch Vector and Vectors match this, so both will have `iter` implemented
+//Both Vector and Vectors match this, so both will have `iter` implemented
 //go:generate goast write impl goast.net/x/iter
 
 type Vector []int64
