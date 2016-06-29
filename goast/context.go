@@ -6,10 +6,11 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"golang.org/x/tools/go/ast/astutil"
 	"path"
 	"path/filepath"
 	"strconv"
+
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 //go:generate goast write impl --prefix=goast_ goast.net/x/iter
@@ -36,6 +37,11 @@ func (c *Context) Clone() (clone *Context, err error) {
 }
 
 type ImportSpecs []*ast.ImportSpec
+
+func (s ImportSpecs) Len() int {
+	return len(s)
+}
+
 type funcDecls []*ast.FuncDecl
 
 type fileDecls []ast.Decl
