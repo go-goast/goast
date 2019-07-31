@@ -351,7 +351,7 @@ goast is still in an alpha/RFC stage of development. Some features that are plan
 
 ## History and acknowledgements
 
-I originally got interested in code generation as a method of genericty in Go when I learned about the [gen](http://clipperhouse.github.io/gen/) package from clipperhouse. When to Go team first announced Go 1.4 and the go:generate proposal, it planted the seed of the idea for goast in my brain and initiated my research into how it might work. In the intervening time I found [gotgo](https://github.com/droundy/gotgo), and more recently (and also quite close to my goals) the [gonerics](https://github.com/bouk/gonerics) package. As projects in the same area as what goast explores, they were all valuble for research and inspiration, as well for providing a contrast against which I wanted to differentiate.
+I originally got interested in code generation as a method of genericty in Go when I learned about the [gen](http://clipperhouse.github.io/gen/) package from clipperhouse. When to Go team first announced Go 1.4 and the go:generate proposal, it planted the seed of the idea for goast in my brain and initiated my research into how it might work. In the intervening time I found [gotgo](https://github.com/droundy/gotgo), and more recently (and also quite close to my goals) the [gonerics](https://github.com/bouk/gonerics) package. As projects in the same area as what goast explores, they were all valuable for research and inspiration, as well for providing a contrast against which I wanted to differentiate.
 
 
 ## Licence
